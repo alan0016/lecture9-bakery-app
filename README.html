@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bakery Orders · README</title>
+<style>
+:root { --bg:#faf6f0; --card:#fff; --ink:#2b2420; --muted:#6f625a; --line:#e7ddd2; --accent:#a8461f; --ok:#23704a; --bad:#b42318; --wait:#7a5200; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.55 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+main { max-width:900px; margin:0 auto; padding:24px 16px 48px; }
+h1 { font-size:26px; margin:0 0 4px; }
+h2 { font-size:19px; margin:32px 0 10px; padding-top:12px; border-top:1px solid var(--line); }
+h3 { font-size:16px; margin:18px 0 6px; }
+.lead { color:var(--muted); margin:0 0 16px; }
+.box { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 18px; }
+code, pre { font-family:Consolas, "SF Mono", Menlo, monospace; font-size:13.5px; }
+code { background:#f1e9e0; padding:1px 5px; border-radius:4px; }
+pre { background:#2b2420; color:#f7efe7; padding:12px 14px; border-radius:10px; overflow-x:auto; }
+pre code { background:none; padding:0; color:inherit; }
+table { border-collapse:collapse; width:100%; margin:6px 0 10px; background:var(--card); }
+th, td { border:1px solid var(--line); padding:6px 9px; text-align:left; vertical-align:top; font-size:14px; }
+th { background:#f4ece3; }
+.tablewrap { overflow-x:auto; }
+ol li, ul li { margin:4px 0; }
+.st { display:inline-block; font-size:12px; font-weight:700; border-radius:999px; padding:1px 8px; background:#efe7de; }
+svg text { font-family:-apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+</style></head>
+<body><main>
+<h1>Home Bakery · Orders</h1>
+<p class="lead">A small app that helps a home baker take cupcake and cake orders from Instagram messages, keep the oven schedule within its hours, and track revenue and costs. Built for MGOC50 Lecture 9.</p>
+
+<h2>1. Start the app</h2>
+<div class="box">
+<ol>
+  <li>Open a terminal in this folder (the one with <code>app.py</code>).</li>
+  <li>Type <code>python app.py</code> and press Enter. (On a Mac: <code>python3 app.py</code>.)</li>
+  <li>Open <a href="http://127.0.0.1:8000">http://127.0.0.1:8000</a> in your browser.</li>
+  <li>To stop it, go back to the terminal and press <b>Ctrl+C</b>.</li>
+</ol>
+<p class="lead" style="margin:0">If it says port 8000 is busy, type <code>python app.py 8001</code> and open http://127.0.0.1:8001 instead. Nothing needs to be installed: the app uses only Python's standard library.</p>
+</div>
+
+<h2>2. Use it: one day at a time</h2>
+<p>The app plays the week of <b>Monday 23 to Sunday 29 November 2026</b>, one day at a time. It starts on Monday with the 13 orders taken before Monday (<code>existing_orders.csv</code>).</p>
+<ol>
+  <li><b>Get the day's messages.</b> Press <b>Get the next day's messages</b> at the top. The status line says <i>Loading Monday's messages…</i>, then <i>Monday's messages loaded</i>. The app reads that day's Instagram page (<code>InstagramOrders_Monday.html</code> and so on), message by message, in the order they were sent.
+    <ul>
+      <li><b>New orders</b> go to <i>Waiting for your decision</i>. Each one says whether it fits the rules, and if not, which rule it breaks.</li>
+      <li><b>Changes and cancellations</b> are applied automatically when they follow the rules. When they don't, they are refused, the order stays as it was, and the <i>Messages</i> list tells you why, so you can let the customer know.</li>
+    </ul></li>
+  <li><b>Decide.</b>
+    <ul>
+      <li>Press <b>Reject</b> on any order you don't want.</li>
+      <li>If an order doesn't fit only because the oven is full, its row says so and tells you whether a helper would make it fit. Press <b>Hire helper ($100)</b> on that day in <i>This week</i>: the day gets 12 oven hours, and the order becomes ✓ Fits.</li>
+    </ul></li>
+  <li><b>Accept all and go to next day.</b> This button asks you to confirm first. Then:
+    <ul>
+      <li>every waiting order that still fits is accepted, one by one, oldest first;</li>
+      <li>every order that still breaks a rule is rejected automatically;</li>
+      <li>today's accepted orders are marked <i>picked up</i> (5 PM), and the app moves to the next day.</li>
+    </ul>
+    Then press <b>Get the next day's messages</b> again for the new day.</li>
+</ol>
+<p>The app can't take actions back. To <b>start the week over</b>: stop the app (Ctrl+C), delete <code>bakery.db</code>, and start the app again. It rebuilds the file from <code>existing_orders.csv</code>, on Monday 23 November.</p>
+
+<h3>What the screen shows</h3>
+<ul>
+  <li><b>Top bar:</b> today's date, the <i>Get the next day's messages</i> button and a status line.</li>
+  <li><b>Waiting for your decision:</b> one row per new order with the customer, product and quantity, pickup day, price and oven hours. It also shows the oven hours left on its pickup day, and ✓ Fits or the rule it breaks. Each row has a Reject button.</li>
+  <li><b>This week:</b> one row per day.
+    <ul>
+      <li>A bar shows the oven hours used out of the day's limit (red = full).</li>
+      <li>Beside it are the day's orders and the day's revenue.</li>
+      <li>The <i>Hire helper ($100)</i> button is active only when the day is at least 2 days away.</li>
+    </ul></li>
+  <li><b>Money:</b> revenue from accepted orders, helper costs, and revenue minus helper costs.</li>
+  <li><b>Messages:</b> every message, newest day first, tagged <span class="st">New order</span>, <span class="st">Change applied</span> / <span class="st">Change refused</span> or <span class="st">Cancellation applied</span> / <span class="st">Cancellation refused</span>, with the reason.</li>
+</ul>
+
+<h2>3. The rules the app follows</h2>
+<p>From the "About the bakery" box on the Instagram pages and Lecture 9, slide 13. There is no AI in the app: every automatic decision is one of these fixed rules.</p>
+<div class="tablewrap"><table>
+<tr><th>Rule</th><th>How the app applies it</th></tr>
+<tr><td>Cupcakes $40 a dozen, 30 min in the oven; cake $120, 2 h. One product per order.</td><td>Hours and price come from the product and quantity: 6 dozen = 3 h and $240.</td></tr>
+<tr><td>The oven runs 8 hours a day; baking happens on the pickup day; pickup at 5 PM.</td><td>A day's accepted orders can never add up to more than its hours. At the end of a day its orders become <i>picked up</i>.</td></tr>
+<tr><td>A helper costs $100 and adds 4 oven hours to one day.</td><td>Booking a helper sets that day's limit to 12 h and adds $100 to costs. A booked helper can't be cancelled in the app.</td></tr>
+<tr><td>Orders, changes, cancellations and helper bookings need 2 days' notice. A message on Monday can be for Wednesday or later.</td><td>Pickup day minus message day must be at least 2. Otherwise:
+  <ul><li>a new order is marked <i>can't be taken</i>;</li>
+  <li>a change or cancellation is refused and the order stays as it was;</li>
+  <li>the helper button is disabled.</li></ul></td></tr>
+<tr><td>The baker says yes or no to every new order.</td><td>The app shows which new orders fit. You reject the ones you don't want. <i>Accept all and go to next day</i> (after you confirm) accepts the rest that fit and rejects the ones that still break a rule.</td></tr>
+</table></div>
+<p>Messages are handled in the order they arrived. This matters on Tuesday: Brown cancels a Thursday order at 8:12 AM, which frees the hour that lets Reyes's 6 dozen fit Thursday exactly (5 + 3 = 8 h).</p>
+
+<h2>4. How it is built</h2>
+<p>One file, <code>app.py</code>, with three parts (Lecture 9, slide 17):</p>
+<ul>
+  <li><b>Front end:</b> one page of plain HTML, CSS and JavaScript (the <code>PAGE</code> text in <code>app.py</code>). It asks the back end for the current state (<code>GET /api/state</code>) and sends each button press as one action (<code>POST /api/…</code>).</li>
+  <li><b>Back end:</b> Python functions that check the rules and update the data. One action runs as one database transaction: if a rule is broken nothing changes, and the reason is shown at the top of the page.</li>
+  <li><b>Database:</b> one SQLite file, <code>bakery.db</code>, created on the first start next to <code>app.py</code>.</li>
+</ul>
+
+<h3>Data model (slide 20)</h3>
+<p>Each fact is recorded once. An order's oven hours are saved with the order. A day's limit (8, or 12 with a helper) is saved with the day. The number of orders, hours used and left, and revenue of each day are not saved: the view <b>day_totals</b> counts them from the two tables every time, so they can never disagree.</p>
+<div class="tablewrap"><table>
+<tr><th>Table</th><th>Columns</th><th>One row is</th></tr>
+<tr><td><b>orders</b></td><td>id (order number), customer, product (cupcakes / cake), quantity, pickup (a day), hours (oven hours required), status, reason, received (message day)</td><td>an order or a request</td></tr>
+<tr><td><b>days</b></td><td>date, total_hours (8, or 12 with a helper), helper (booked, $100: 0 or 1)</td><td>a day; one day has many orders</td></tr>
+<tr><td><b>day_totals</b> (a view)</td><td>date, total_hours, helper, helper_cost, orders (number of accepted orders), hours_used, hours_left, revenue</td><td>a day with its totals, counted from <b>days</b> and <b>orders</b></td></tr>
+<tr><td><b>messages</b></td><td>day, time, customer, text, kind (order / change / cancel / unclear), outcome, result, order_id</td><td>an Instagram message and what the app did with it</td></tr>
+<tr><td>state</td><td>key, value</td><td>today's date, and which days' messages were loaded</td></tr>
+</table></div>
+<p>Questions the tables answer:</p>
+<ul>
+  <li><i>How many oven hours are left on Friday?</i> <code>SELECT hours_left FROM day_totals WHERE date = '2026-11-27'</code></li>
+  <li><i>What is the total revenue this week?</i> <code>SELECT SUM(revenue) FROM day_totals WHERE date BETWEEN '2026-11-23' AND '2026-11-29'</code></li>
+</ul>
+
+<h3>State diagram of an order (slide 21)</h3>
+<svg viewBox="0 0 760 250" width="100%" role="img" aria-label="Order states: requested or incompatible, then accepted or rejected; accepted then picked up or cancelled">
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#6f625a"/></marker></defs>
+  <g font-size="13" fill="#2b2420">
+    <rect x="10" y="95" width="120" height="44" rx="8" fill="#fff" stroke="#a8461f"/><text x="70" y="122" text-anchor="middle">Message arrives</text>
+    <rect x="200" y="30" width="130" height="44" rx="8" fill="#fff3d1" stroke="#7a5200"/><text x="265" y="57" text-anchor="middle">Requested</text>
+    <rect x="200" y="160" width="130" height="44" rx="8" fill="#fdeceb" stroke="#b42318"/><text x="265" y="187" text-anchor="middle">Incompatible</text>
+    <rect x="420" y="30" width="130" height="44" rx="8" fill="#e4f3ea" stroke="#23704a"/><text x="485" y="57" text-anchor="middle">Accepted</text>
+    <rect x="420" y="160" width="130" height="44" rx="8" fill="#fff" stroke="#6f625a"/><text x="485" y="187" text-anchor="middle">Rejected</text>
+    <rect x="620" y="10" width="130" height="40" rx="8" fill="#fff" stroke="#6f625a"/><text x="685" y="35" text-anchor="middle">Picked up</text>
+    <rect x="620" y="80" width="130" height="40" rx="8" fill="#fff" stroke="#6f625a"/><text x="685" y="105" text-anchor="middle">Cancelled</text>
+  </g>
+  <g stroke="#6f625a" fill="none" stroke-width="1.5" marker-end="url(#a)">
+    <path d="M130 110 L198 58"/><path d="M130 125 L198 180"/>
+    <path d="M240 160 L240 76"/><path d="M290 76 L290 158"/>
+    <path d="M330 50 L418 50"/><path d="M330 182 L418 182"/><path d="M310 74 L430 158"/>
+    <path d="M550 45 L618 32"/><path d="M550 58 L618 98"/>
+  </g>
+  <g font-size="11.5" fill="#6f625a">
+    <text x="24" y="82">breaks no rule</text>
+    <text x="20" y="160">short notice or</text><text x="20" y="174">not enough hours</text>
+    <text x="234" y="112" text-anchor="end">re-checked after</text><text x="234" y="126" text-anchor="end">every action</text>
+    <text x="338" y="42">Accept all</text>
+    <text x="338" y="200">Reject, or auto</text>
+    <text x="556" y="14">5 PM on the</text><text x="556" y="27">pickup day</text>
+    <text x="560" y="138">cancellation with</text><text x="560" y="152">2 days' notice</text>
+  </g>
+</svg>
+<p class="lead">Requested and Incompatible are both "waiting for your decision". An order moves between them when oven time frees up or fills (a cancellation, a helper, another accepted order). A short-notice order stays Incompatible. You can reject either one. <i>Accept all and go to next day</i> accepts the Requested ones and rejects any still Incompatible automatically.</p>
+
+<h3>Actions and what they change (slide 22)</h3>
+<div class="tablewrap"><table>
+<tr><th>Action</th><th>Check</th><th>Edit</th></tr>
+<tr><td>Fetch: new order</td><td>2 days' notice and enough hours left on the pickup day</td><td>Add a row to <b>orders</b> with status Requested (or Incompatible and the reason) and received = today; add a row to <b>messages</b>.</td></tr>
+<tr><td>Fetch: a change</td><td>2 days' notice (from the earlier of the old and new pickup days) and enough hours on the new day, not counting the order itself</td><td>Update the order's product, quantity and pickup in <b>orders</b>. The day's hours follow, because they are worked out from the orders. If the check fails, nothing changes and the message is marked Refused.</td></tr>
+<tr><td>Fetch: cancellation</td><td>2 days' notice before the pickup day</td><td>Set the order's status in <b>orders</b> to Cancelled. Its hours are freed, and waiting orders are re-checked.</td></tr>
+<tr><td>You reject</td><td>The order is still waiting</td><td>Set the order's status in <b>orders</b> to Rejected.</td></tr>
+<tr><td>Accept all and go to next day</td><td>Today's messages were loaded. Then each order, one by one: enough hours left in the day</td><td>Each order that fits: set its status in <b>orders</b> to Accepted (its hours and count show up in <b>day_totals</b>). Each order that doesn't: set it to Rejected. Then set today's accepted orders to Picked up, and set today to the next day in <b>state</b>.</td></tr>
+<tr><td>Helper button</td><td>2 days' notice, and no helper booked yet that day</td><td>In <b>days</b>, record the helper as booked and set that day's total_hours to 12.</td></tr>
+</table></div>
+
+<h2>5. Testing</h2>
+<p>Run <code>python test_app.py</code>. It never touches <code>bakery.db</code>: it works on a temporary copy that is deleted afterwards. It checks the reading of messages and dates. It also plays the whole week, Monday to Sunday, pressing <i>Accept all and go to next day</i> every day. It checks that no day ever needs more oven hours than it has, and that every order ends as worked out by hand.</p>
+<p>What happened to every change and cancellation:</p>
+<div class="tablewrap"><table>
+<tr><th>Message</th><th>Result</th><th>Why</th></tr>
+<tr><td>Tue: Brown cancels Thu 26</td><td>Cancellation applied</td><td>2 days' notice. Frees 1 h, which lets Reyes's 6 dozen fit Thursday exactly (5 + 3 = 8 h).</td></tr>
+<tr><td>Wed: Moreau changes to 6 dozen for Sat 28</td><td>Change applied</td><td>3 days' notice; Saturday goes from 6 to 7 of 8 h.</td></tr>
+<tr><td>Thu: Lam changes to 1 dozen for Fri 27</td><td>Change refused</td><td>Friday is only 1 day away. Lam keeps 2 dozen.</td></tr>
+<tr><td>Fri: Costa cancels Sun 29</td><td>Cancellation applied</td><td>2 days' notice. Frees 1 h on Sunday.</td></tr>
+<tr><td>Sat: Zhou changes to 2 dozen for Sun 29</td><td>Change refused</td><td>Sunday is only 1 day away. Zhou keeps 4 dozen.</td></tr>
+<tr><td>Sun: Lee cancels Mon 30</td><td>Cancellation refused</td><td>Monday 30 is only 1 day away. Lee's order stays.</td></tr>
+</table></div>
+<p>Result of that run without helpers:</p>
+<ul>
+  <li>24 orders taken, worth $3,640 in all ($3,000 for pickups Monday to Sunday, $640 for Mon 30 Nov and Tue 1 Dec).</li>
+  <li>6 rejected automatically: Okafor and Adams for short notice; Park, Singh, Wilson and Bell because their day was full.</li>
+  <li>2 cancelled.</li>
+  <li>Thursday, Friday and Saturday are full at 8 of 8 hours. No day ever goes over.</li>
+</ul>
+<p>A second test hires a helper for Friday on Tuesday: Park's order then fits and is accepted, and Money shows the $100 cost. It also checks that a helper for Wednesday is refused on Tuesday (1 day's notice), and that Reject works.</p>
+<p>To try the app by hand without touching your data, start it on a copy: <code>python app.py --db test_copy.db</code>.</p>
+
+<h2>6. Files</h2>
+<div class="tablewrap"><table>
+<tr><th>File</th><th>What it is</th></tr>
+<tr><td><code>app.py</code></td><td>The whole app: rules, database, web page and web server.</td></tr>
+<tr><td><code>bakery.db</code></td><td>The data. Created on the first start; delete it (with the app stopped) to begin the week again.</td></tr>
+<tr><td><code>test_app.py</code></td><td>The tests (section 5).</td></tr>
+<tr><td><code>existing_orders.csv</code></td><td>The 13 orders taken before Monday 23 November.</td></tr>
+<tr><td><code>InstagramOrders_Monday.html</code> … <code>_Sunday.html</code></td><td>The Instagram messages, one page per day.</td></tr>
+<tr><td><code>README.html</code></td><td>This page. The app links to it at the bottom.</td></tr>
+</table></div>
+</main></body></html>

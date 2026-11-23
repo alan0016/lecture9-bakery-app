@@ -1,0 +1,14 @@
+# Only the bakery app goes to GitHub. The Workflow Builder and the class exercises stay on this computer.
+Workflow-Builder.html
+analyze.js
+data.js
+designs.js
+engine.js
+logs.js
+policy.js
+server.py
+saved-runs/
+exercises/
+
+# Python's cache files
+__pycache__/
